@@ -1,0 +1,15 @@
+{
+  "name": "rails-37signals",
+  "description": "Claude Code plugin for writing Rails the 37signals way.",
+  "owner": {
+    "name": "Dhishan",
+    "email": "marketing@dayspringlabs.com"
+  },
+  "plugins": [
+    {
+      "name": "rails-37signals",
+      "source": "./",
+      "description": "Write Rails the 37signals way: vanilla Rails, rich models, no service layer, Minitest and fixtures, importmap, plain CSS. Every rule cited to real source in Fizzy, Campfire or Writebook."
+    }
+  ]
+}

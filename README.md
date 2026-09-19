@@ -46,13 +46,68 @@ No hooks, MCP servers or settings. The plugin advises and never blocks an edit.
 
 ## Installation
 
+This repository is both the plugin and a one-plugin marketplace
+(`.claude-plugin/marketplace.json`). You add the marketplace, then install the plugin from it.
+
+### From GitHub
+
+In Claude Code:
+
+```text
+/plugin marketplace add dkudwalli/rails-37signals-plugin
+/plugin install rails-37signals@rails-37signals
+```
+
+Or from your shell:
+
 ```bash
-# Try it for one session
+claude plugin marketplace add dkudwalli/rails-37signals-plugin
+claude plugin install rails-37signals@rails-37signals
+```
+
+Restart Claude Code if the skills and commands don't appear. Run `/plugin` to check that
+`rails-37signals` is installed and enabled.
+
+### From a local clone
+
+```bash
+git clone https://github.com/dkudwalli/rails-37signals-plugin.git
+claude plugin marketplace add ./rails-37signals-plugin
+claude plugin install rails-37signals@rails-37signals
+```
+
+To try it for one session without installing:
+
+```bash
 claude --plugin-dir /path/to/rails-37signals-plugin
 ```
 
-To keep it installed, add the directory to a local plugin marketplace and install it from there
-with `/plugin`.
+### For a whole team
+
+To have Claude Code offer the plugin to everyone who opens a Rails repo, commit this to the repo's
+`.claude/settings.json`:
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "rails-37signals": {
+      "source": { "source": "github", "repo": "dkudwalli/rails-37signals-plugin" }
+    }
+  },
+  "enabledPlugins": {
+    "rails-37signals@rails-37signals": true
+  }
+}
+```
+
+Each person is asked to trust the marketplace the first time they open the repo.
+
+### Updating and removing
+
+```text
+/plugin marketplace update rails-37signals
+/plugin uninstall rails-37signals@rails-37signals
+```
 
 ## Suggested first run in a Rails app
 
