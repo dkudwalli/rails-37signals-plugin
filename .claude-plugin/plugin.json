@@ -1,0 +1,11 @@
+{
+  "name": "rails-37signals",
+  "version": "0.1.0",
+  "description": "Write Rails the 37signals way: vanilla Rails, rich models, no service layer, Minitest and fixtures, importmap, plain CSS. Every rule cited to real source in Fizzy, Campfire or Writebook.",
+  "author": {
+    "name": "Dhishan",
+    "email": "marketing@dayspringlabs.com"
+  },
+  "license": "MIT",
+  "keywords": ["rails", "ruby", "37signals", "hotwire", "vanilla-rails", "code-review", "minitest"]
+}
