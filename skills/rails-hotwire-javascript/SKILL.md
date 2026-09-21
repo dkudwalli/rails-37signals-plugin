@@ -25,6 +25,10 @@ Layout: `controllers/` (one behaviour each), `helpers/` (pure functions, named e
 `initializers/` (side effects on load), `lib/` (multi-file or vendored subsystems), `models/`
 (stateful client classes, when needed).
 
+If the app ships an installable PWA or a Hotwire Native shell, the rules for the service worker,
+the web manifest, push registration and bridge components are in `references/native-and-pwa.md`.
+A web-only app does not need them.
+
 ## Stimulus conventions
 
 - **One behaviour per controller**, named for the behaviour not the page: `auto_submit`,
@@ -48,6 +52,77 @@ Layout: `controllers/` (one behaviour each), `helpers/` (pure functions, named e
   `setTimeout` matched to a CSS duration, and CSS as the source of truth for interactivity.
 - When a controller grows a data structure or algorithm, extract it to `app/javascript/models/` and
   keep the controller as the DOM adapter.
+
+### What that looks like
+
+`fizzy/app/javascript/controllers/auto_submit_controller.js:1-43` in full. `submit` is public
+because a `data-action` calls it; everything else is `#private`. Note `aria-busy` handled inside the
+behaviour, and no state outside the element:
+
+```javascript
+import { Controller } from "@hotwired/stimulus"
+
+export default class extends Controller {
+  connect() {
+    this.element.addEventListener("turbo:submit-end", this.#handleSubmitEnd.bind(this), { once: true })
+    this.submit()
+  }
+
+  submit() {
+    this.#markAsBusy()
+    this.#disableSubmit()
+    this.element.requestSubmit()
+  }
+
+  #handleSubmitEnd(event) {
+    if (event.detail.success) {
+      this.element.remove()
+    } else {
+      this.#clearBusy()
+      this.#enableSubmit()
+    }
+  }
+
+  #markAsBusy() {
+    this.element.setAttribute("aria-busy", "true")
+  }
+
+  #submitElements() {
+    return this.element.querySelectorAll("input[type=submit],button")
+  }
+}
+```
+
+A controller that owns an observer shows the paired-teardown and arrow-field rules together
+(`fizzy/app/javascript/controllers/bridge/title_controller.js:10-21`, `:52-62`):
+
+```javascript
+  async connect() {
+    super.connect()
+    await nextFrame()
+    this.#startObserver()
+    window.addEventListener("resize", this.#windowResized)
+  }
+
+  disconnect() {
+    super.disconnect()
+    this.#stopObserver()
+    window.removeEventListener("resize", this.#windowResized)
+  }
+
+  // Bound as a class field so removeEventListener gets the same reference.
+  #windowResized = () => {
+    this.#updateObserverIfNeeded()
+  }
+
+  get #title() {
+    return this.titleValue ? this.titleValue : document.title
+  }
+```
+
+Every `addEventListener` in `connect` has its `removeEventListener` in `disconnect`, and the
+observer is disconnected with `this.observer?.disconnect()`. A controller that starts something and
+does not stop it leaks on every Turbo navigation.
 
 ## Turbo
 
