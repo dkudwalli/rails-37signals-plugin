@@ -41,11 +41,65 @@ Components use only `--color-*`. No component file names a hue. Name by role —
 `--color-bg` rather than black and white — with `-light` / `-dark` modifiers and
 `--color-always-black` for the few things that must not invert.
 
+Fizzy runs the same two tiers at scale. The raw tier is bare oklch components, on a shared
+lightness ramp (`fizzy/app/assets/stylesheets/_global.css:92-121`):
+
+```css
+  --lch-black: 0% 0 0;
+  --lch-white: 100% 0 0;
+
+  --lch-canvas: var(--lch-white);
+  --lch-ink-inverted: var(--lch-white);
+
+  --lch-ink-darkest: 26% 0.05 264;
+  --lch-ink-darker: 40% 0.026 262;
+  --lch-ink-dark: 56% 0.014 260;
+  --lch-ink-medium: 66% 0.008 258;
+  --lch-ink-light: 84% 0.005 256;
+```
+
+The semantic tier wraps them, and is the only thing components may name
+(`fizzy/app/assets/stylesheets/_global.css:191-203`):
+
+```css
+  --color-ink: oklch(var(--lch-ink-darkest));
+  --color-ink-light: oklch(var(--lch-ink-light));
+  --color-ink-inverted: oklch(var(--lch-ink-inverted));
+  --color-canvas: oklch(var(--lch-canvas));
+```
+
+Storing components rather than colours is what makes `oklch(var(--lch-black) / 5%)` possible — one
+token composes into any alpha, so the palette does not need a `--color-black-5` for every opacity
+(`fizzy/app/assets/stylesheets/_global.css:47-50`).
+
 ## Dark mode lives in the token layer
 
 Redefine only the `--lch-*` values in one `@media (prefers-color-scheme: dark)` block inside `:root`
 (`writebook/app/assets/stylesheets/colors.css:37-50`). **If a dark-mode rule is being written inside a
 component, the tokens are wrong.**
+
+The whole of dark mode is the raw tier restated — the semantic tier and every component are
+untouched, because they only ever referenced `--color-*`
+(`fizzy/app/assets/stylesheets/_global.css:375-387`):
+
+```css
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme]) {
+    --lch-canvas: 20% 0.0195 232.58;
+    --lch-ink-inverted: var(--lch-black);
+
+    --lch-ink-darkest: 96.02% 0.0034 260;
+    --lch-ink-darker: 86% 0.0061 260;
+    --lch-ink-dark: 73.97% 0.009 260;
+    --lch-ink-medium: 62% 0.0122 260;
+    --lch-ink-light: 40% 0.0148 260;
+  }
+}
+```
+
+Note the ramp inverts — `ink-darkest` becomes the *lightest* value — so `--color-ink` stays "the
+colour text is" in both themes. And note `html:not([data-theme])`: the system preference applies
+only when the user has not chosen explicitly, so a manual toggle wins.
 
 For a manual theme toggle, write each dark rule twice — `html[data-theme="dark"] &` and
 `@media (prefers-color-scheme: dark) { html:not([data-theme]) & }` — and set `data-theme` before first
@@ -66,7 +120,27 @@ Keep the design system in one `:root` (`fizzy/app/assets/stylesheets/_global.css
 
 ## Components expose custom properties as their API
 
-Every visual property reads `var(--btn-*, <default>)` (`fizzy/app/assets/stylesheets/buttons.css:2-23`).
+Every visual property reads `var(--btn-*, <default>)` (`fizzy/app/assets/stylesheets/buttons.css:2-23`):
+
+```css
+@layer components {
+  .btn {
+    --icon-size: var(--btn-icon-size, 1.3em);
+    --btn-border-radius: 99rem;
+
+    background-color: var(--btn-background, var(--color-canvas));
+    border-radius: var(--btn-border-radius);
+    border: var(--btn-border-size, 1px) solid var(--btn-border-color, var(--color-ink-light));
+    color: var(--btn-color, var(--color-ink));
+    font-weight: var(--btn-font-weight, 600);
+    gap: var(--btn-gap, 0.5em);
+    padding: var(--btn-padding, 0.5em 1.1em);
+```
+
+Each declaration names the knob and its default in one place, so a caller overrides
+`--btn-background` without knowing which property it feeds. The defaults are themselves semantic
+tokens, so a button follows dark mode for free.
+
 A variant sets variables instead of re-declaring properties
 (`fizzy/app/assets/stylesheets/theme-switcher.css:10-27`). No `!important`, no specificity ladders.
 Pass data from Ruby as one inline custom property and derive the rest with `color-mix()`

@@ -21,7 +21,37 @@ module (`Authentication::SessionLookup`) so Action Cable and Active Storage shar
 
 ## Secure by default; opt out with a named macro
 
-`writebook/app/controllers/concerns/authentication.rb:1-46`:
+`writebook/app/controllers/concerns/authentication.rb:1-46`. The shape, from Fizzy's version of the
+same concern (`fizzy/app/controllers/concerns/authentication.rb:4-30`):
+
+```ruby
+  included do
+    before_action :require_account # Checking and setting account must happen first
+    before_action :require_authentication
+    helper_method :authenticated?
+
+    etag { Current.identity.id if authenticated? }
+  end
+
+  class_methods do
+    def require_unauthenticated_access(**options)
+      allow_unauthenticated_access **options
+      before_action :redirect_authenticated_user, **options
+    end
+
+    def allow_unauthenticated_access(**options)
+      skip_before_action :require_authentication, **options
+      before_action :resume_session, **options
+      allow_unauthorized_access **options
+    end
+  end
+```
+
+Every opt-out is a named macro built from `skip_before_action`, declared once here. A controller
+never calls `skip_before_action :require_authentication` itself — that is the whole point, because a
+named macro is greppable and a scattered skip is not. Note too that `allow_unauthenticated_access`
+still runs `resume_session`, so a public page knows who is looking, and the `etag` block keys
+caching on the identity so one user's page is never served to another.
 
 - `before_action :require_authentication` is unconditional in `ApplicationController`. A new controller
   is protected because nothing was done.
