@@ -1,6 +1,6 @@
 ---
 name: rails-adopt
-description: This skill should be used when the user asks to "adopt the 37signals playbook", "add the Rails rules to AGENTS.md", "install the playbook in this repo", "add the house rules to CLAUDE.md", or runs /rails-37signals:rails-adopt. Copies the condensed 37signals Rails ruleset into the target repository's AGENTS.md or CLAUDE.md so every future session follows it.
+description: Copies the condensed 37signals Rails ruleset into the target repository's AGENTS.md or CLAUDE.md so every future session follows it. Edits the target file, so invoke it explicitly.
 argument-hint: "[AGENTS.md | CLAUDE.md]  (default: whichever exists, else AGENTS.md)"
 allowed-tools: Read, Edit, Write, Glob, Grep, Bash(diff:*), Bash(wc:*), Bash(git status:*)
 disable-model-invocation: true

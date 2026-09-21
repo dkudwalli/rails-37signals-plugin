@@ -131,6 +131,54 @@ explicit `before_action` only for privilege beyond visibility, as a one-liner ca
 predicate: `head :forbidden unless Current.user.can_administer_card?(@card)`. See the
 `rails-auth-security` skill.
 
+## Exceptions: let them raise
+
+There is no global exception handler in any of the three applications — no `rescue_from` in
+`ApplicationController`, no `exceptions_app`, no `ErrorsController`. Rails' own handling plus static
+`public/404.html`, `422.html`, `500.html` is the whole story.
+
+`rescue_from` appears three times across all three codebases, and every use is narrow: one specific
+exception class, at the one controller or job concern where it is meaningful.
+
+```ruby
+class Users::AvatarsController < ApplicationController
+  rescue_from(ActiveSupport::MessageVerifier::InvalidSignature) { head :not_found }
+```
+
+That is the entire handler (`once-campfire/app/controllers/users/avatars_controller.rb:4`) — a
+tampered avatar token is a 404, not a 500.
+
+**Rules:**
+
+- **Never add `rescue_from StandardError`**, and never add a handler to `ApplicationController`. A
+  crash that reaches the error page is a bug report; a swallowed one is a silent failure.
+- **Rescue one named exception, at the controller that owns the situation**, and respond with the
+  status that describes it.
+- **Re-raise anything you did not specifically mean to handle.** Fizzy's SMTP concern matches on the
+  error message and falls through to `raise`
+  (`fizzy/app/jobs/concerns/smtp_delivery_error_handling.rb:14-22`):
+
+  ```ruby
+    rescue_from Net::SMTPSyntaxError do |error|
+      case error.message
+      when /\A501 5\.1\.3/
+        # Ignore undeliverable email addresses.
+        Sentry.capture_exception error, level: :info if Fizzy.saas?
+      else
+        raise
+      end
+    end
+  ```
+
+- **In jobs, prefer `retry_on` / `discard_on` to a rescue.** The same concern uses
+  `retry_on Net::OpenTimeout, Net::ReadTimeout, Socket::ResolutionError, wait: :polynomially_longer`
+  (`:6`) and reserves `rescue_from` for errors that are permanent.
+- **Comment why an exception is tolerable**, with the code and what it means — the concern names
+  "452 4.3.1 Insufficient system storage" and "550 5.1.1: Unknown users" so the next reader can tell
+  whether the rescue is still right.
+- Authorization needs no handler at all: scoped lookups raise `RecordNotFound`, which Rails already
+  renders as 404.
+
 ## Other controller conventions
 
 - **`ApplicationController` has no method bodies** — only `include` lines of named concerns and

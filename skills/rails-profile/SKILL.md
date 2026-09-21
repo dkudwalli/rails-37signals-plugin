@@ -1,15 +1,26 @@
 ---
 name: rails-profile
-description: This skill should be used when the user asks to "choose an app profile", "start a new Rails app the 37signals way", "Solid Queue or Redis", "should I use Kamal", "pick a Rails stack", "record the application profile", or runs /rails-37signals:rails-profile. Walks through the ONCE-compatible versus Fizzy profile decision and records the result in the target app's AGENTS.md.
+description: This skill should be used when choosing or reasoning about the Rails runtime stack — when the user asks "Solid Queue or Redis", "should I use Kamal", "pick a Rails stack", "Solid Cache or Redis cache", "which queue backend", "choose an app profile", "start a new Rails app the 37signals way", or "record the application profile". Provides the ONCE-compatible versus Fizzy profile decision, the combinations that must not be mixed, and — on explicit request — records the choice in the target app's AGENTS.md.
 argument-hint: "[AGENTS.md | CLAUDE.md]  (default: whichever exists, else AGENTS.md)"
 allowed-tools: Read, Edit, Write, Glob, Grep, AskUserQuestion, Bash(git status:*)
-disable-model-invocation: true
 ---
 
 # Choose and record the application profile
 
 Do not assemble a Rails architecture one gem at a time. Choose one of two coherent profiles, then
 record the product-specific deviations. Never average the two into a hybrid.
+
+## First: which mode is this?
+
+**Answer mode** — the user asked a stack question ("Solid Queue or Redis?", "should I use Kamal?").
+Answer it from the table and the non-negotiable combinations below, in a few sentences. Name which
+profile the answer belongs to and what else comes with it. Do not run the interview, and do not write
+to any file. Offer `/rails-37signals:rails-profile` if they want the choice recorded.
+
+**Record mode** — the user invoked this skill explicitly, or asked to choose/record a profile for the
+app. Run Steps 1–4.
+
+Everything below Step 1 is record mode.
 
 ## The two profiles
 
@@ -71,8 +82,12 @@ If an answer would break one of these, explain the conflict in one sentence and 
 
 ## Step 4: Record it
 
-Insert this block at the top of the target file chosen in Step 1, after its H1 if one exists (create
-the file if absent):
+Show the block you are about to write and the file it will go into, and get the user's agreement
+before editing. This skill can be model-invoked, so never write to `AGENTS.md` / `CLAUDE.md` as a
+side effect of answering a question.
+
+Then insert this block at the top of the target file chosen in Step 1, after its H1 if one exists
+(create the file if absent):
 
 ```markdown
 ## Application profile

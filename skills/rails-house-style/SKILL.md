@@ -1,6 +1,6 @@
 ---
 name: rails-house-style
-description: This skill should be used when writing, reviewing, or restructuring Ruby code in a Rails application — whenever the user asks to "add a feature", "refactor this", "where should this code go", "should I add a service object", "create app/services", "add a gem", mentions "vanilla Rails", "37signals style", "Basecamp style", "conceptual compression", or is choosing between a model, concern, PORO, service, presenter, or form object. Provides the philosophy, the Ruby style rules, and the list of libraries and directories these codebases deliberately refuse.
+description: This skill should be used when deciding what shape Rails code should take rather than how one layer works — when the user asks "should I add a service object", "create app/services", "do we need a presenter/form object/query object", "should I add a gem", "is this over-engineered", "what would 37signals do here", or mentions "vanilla Rails", "37signals style", "Basecamp style", or "conceptual compression". Provides the philosophy, the Ruby style rules, and the list of libraries and directories these codebases deliberately refuse. For work inside one layer, prefer the specific skill (rails-models, rails-controllers-routing, rails-views-helpers, and so on).
 ---
 
 # Rails house style (37signals)

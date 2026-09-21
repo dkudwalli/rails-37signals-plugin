@@ -161,7 +161,7 @@ contract: resolve with `Resolv`, reject loopback, RFC1918, link-local, IPv4-mapp
 metadata and other special-use ranges, then connect to the checked address. Keep an app-level test
 of the addresses the app will never serve (`fizzy/test/models/surfguard_policy_test.rb:1-11`).
 
-Bounded delivery (`fizzy/app/models/webhook/delivery.rb:4-9, 68-88`):
+Bounded delivery (`fizzy/app/models/webhook/delivery.rb:4-9`, `fizzy/app/models/webhook/delivery.rb:68-88`):
 
 ```ruby
   ENDPOINT_TIMEOUT = 7.seconds

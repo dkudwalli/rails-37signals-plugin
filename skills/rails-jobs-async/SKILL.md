@@ -107,16 +107,17 @@ every environment (`fizzy/config/queue.yml:1-13`).
 
 ## The backend is a profile decision
 
-| | Fizzy | Campfire / Writebook |
-|---|---|---|
-| Adapter | Solid Queue (database) | Resque + resque-pool (Redis) |
-| Recurring | `config/recurring.yml` | none |
+Fizzy runs Solid Queue with `config/recurring.yml`; Campfire and Writebook run Resque + resque-pool
+on Redis with no recurring support. **Solid Queue, Solid Cache and Solid Cable are one decision;
+Redis, Resque and resque-pool are another. Pick one family and never mix them for the same work**,
+and do not combine Procfile workers with `SOLID_QUEUE_IN_PUMA`.
 
-> Divergence — direction of travel: Solid Queue for new work. It removes Redis from the deployment.
-> Keep Resque only for an ONCE-compatible app with an existing Redis/Resque constraint. **Never run
-> both for the same work**, and do not combine Procfile workers with `SOLID_QUEUE_IN_PUMA`. The
-> `_later`/`_now` convention is identical on either backend. See the `rails-tooling-deploy` skill and
-> `/rails-37signals:rails-profile`.
+Take Solid Queue for new work — it removes Redis from the deployment. Keep Resque only for an
+ONCE-compatible app with an existing Redis/Resque constraint. The `_later`/`_now` convention is
+identical on either backend.
+
+The full profile table, and the rest of what each choice drags along, is in the `rails-profile`
+skill.
 
 ## Mail and push are delivery paths chosen by the model
 

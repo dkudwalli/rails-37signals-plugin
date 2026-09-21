@@ -1,6 +1,6 @@
 ---
 name: rails-models
-description: This skill should be used when creating or changing an Active Record model, a model concern, or domain logic in a Rails app — when the user asks to "add a model", "add a boolean column", "mark something as done/published/archived", "this model is getting too big", "split this model", "add a scope", "add a callback", "fix N+1 queries", "add includes/preload", "where do I put this method", or mentions `delegated_type`, `Current`, `ActiveSupport::CurrentAttributes`, STI, enums, or association extensions. Provides the namespaced-concern idiom, the state-as-record pattern, and scope and callback conventions from three 37signals applications.
+description: This skill should be used when creating or changing an Active Record model, a model concern, or domain logic in a Rails app — when the user asks to "add a model", "should this be a boolean column or a record", "mark something as done/published/archived", "this model is getting too big", "split this model", "add a scope", "add a callback", "fix N+1 queries", "add includes/preload", "where do I put this method", or mentions `delegated_type`, `Current`, `ActiveSupport::CurrentAttributes`, STI, enums, or association extensions. Provides the namespaced-concern idiom, the state-as-record pattern, and scope and callback conventions from three 37signals applications.
 ---
 
 # Models
@@ -94,6 +94,47 @@ because `Closure` is a resource, so closing is `POST /cards/:id/closure` and reo
 a record with a `has_one`.** The predicate becomes `closure.present?` and the verb becomes
 `create_closure!`. The same shape appears as `Card::NotNow`, `Board::Publication`, `Pin`, `Watch`,
 `Access`, `Boost`, `Ban`, `Edit`.
+
+The transform, concretely:
+
+```ruby
+# Bad — the column answers "is it closed?" and nothing else.
+# Adding "who" means another column; adding an endpoint means a custom verb.
+class Card < ApplicationRecord
+  scope :closed, -> { where(closed: true) }
+  scope :open,   -> { where(closed: false) }
+
+  def close!(user)
+    update!(closed: true, closed_at: Time.current, closed_by_id: user.id)
+  end
+
+  def reopen! = update!(closed: false, closed_at: nil, closed_by_id: nil)
+end
+
+# Good — the state is a record, so who/when come with it and it has a URL.
+class Card < ApplicationRecord
+  include Closeable
+end
+
+module Card::Closeable
+  extend ActiveSupport::Concern
+
+  included do
+    has_one :closure, dependent: :destroy
+
+    scope :closed, -> { joins(:closure) }
+    scope :open,   -> { where.missing(:closure) }
+  end
+
+  def closed? = closure.present?
+  def close!(user) = create_closure!(creator: user) unless closed?
+  def reopen! = closure&.destroy
+end
+```
+
+`closed_by` is `closure.creator`, `closed_at` is `closure.created_at`, and the endpoint is
+`POST /cards/:id/closure` with `DELETE` to reverse it — no custom controller verb. The `open` scope
+needs no `NULL` handling because `where.missing` is a left join.
 
 ## Verb methods are idempotent and transactional
 

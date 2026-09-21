@@ -111,6 +111,43 @@ render an "unrenderable" partial so one corrupt record does not 500 the page
   rather than a JS timer (`fizzy/app/views/layouts/shared/_flash.html.erb:1-8`).
 - Write JSON as jbuilder templates in the same view directory (`show.json.jbuilder`). No serializer
   classes and no `as_json` overrides on models.
+
+## JSON mirrors the HTML partial tree
+
+The JSON views are built exactly like the HTML ones: a collection template that renders a
+per-record partial. `fizzy/app/views/tags/index.json.jbuilder:1` is the whole index:
+
+```ruby
+json.array! @page.records, partial: "tags/tag", as: :tag
+```
+
+And the partial owns one record (`fizzy/app/views/users/_user.json.jbuilder:1-9`):
+
+```ruby
+json.cache! user do
+  json.(user, :id, :name, :role, :active)
+
+  json.email_address user.identity&.email_address
+  json.created_at user.created_at.utc
+
+  json.url user_url(user)
+  json.avatar_url user_avatar_url(user)
+end
+```
+
+**Rules:**
+
+- **One partial per record, named like the HTML one** (`_user.json.jbuilder` beside `_user.html.erb`),
+  and `json.array!` with `partial:`/`as:` for the collection. No `index.json.jbuilder` that loops.
+- **Wrap the partial body in `json.cache! record`** — the same Russian-doll caching as the HTML
+  views, keyed on the record.
+- **Use the terse attribute form** `json.(user, :id, :name)` for plain columns, and a named line
+  only where the value is computed or reached through an association.
+- **Emit times as UTC explicitly**: `json.created_at user.created_at.utc`. Do not let the response
+  depend on the server's zone.
+- **Include `_url` fields built from route helpers**, so a client never has to construct a URL.
+- **No serializer, presenter or `as_json` override.** If a value needs logic, it is a model method,
+  and the template calls it.
 - Add a custom Turbo Stream action with a seven-line helper prepended onto
   `Turbo::Streams::TagBuilder` plus a `Turbo.StreamActions` registration in JS
   (`writebook/app/helpers/turbo_stream_actions_helper.rb:1-7`).
