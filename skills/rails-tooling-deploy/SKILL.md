@@ -69,15 +69,14 @@ the image; strip package-manager and Bundler caches in the build stage.
 
 ## Deployment follows the application profile
 
-| | Fizzy profile | ONCE-compatible profile |
-|---|---|---|
-| Deploy | Kamal + Docker, persistent volume | Docker + Procfile (web, redis, workers) |
-| Jobs | Solid Queue (in Puma via `SOLID_QUEUE_IN_PUMA` on one server) | Resque + resque-pool |
-| Cache / Cable | Solid Cache / Solid Cable | Redis |
-
 **Solid Queue, Solid Cache and Solid Cable are one decision; Redis, Resque and resque-pool are one
-decision. Pick one family; never mix them.** For a new self-hosted app with no ONCE compatibility
-requirement, take the Solid runtime. Run `/rails-37signals:rails-profile` to choose and record it.
+decision. Pick one family; never mix them.** The Fizzy profile deploys with Kamal + Docker on a
+persistent volume and can run Solid Queue inside Puma via `SOLID_QUEUE_IN_PUMA` on a single server;
+the ONCE-compatible profile deploys Docker + Procfile processes (web, redis, workers). For a new
+self-hosted app with no ONCE compatibility requirement, take the Solid runtime.
+
+The full profile table is in the `rails-profile` skill; run `/rails-37signals:rails-profile` to
+choose and record the decision.
 
 Commit `config/deploy.yml`; keep secrets outside Git; declare and back up the storage volume — SQLite
 and local Active Storage are product data (`fizzy/config/deploy.yml:17-60`).

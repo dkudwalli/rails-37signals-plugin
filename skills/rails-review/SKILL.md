@@ -1,6 +1,6 @@
 ---
 name: rails-review
-description: This skill should be used when the user asks to "review this Rails code", "review my Rails PR", "review the diff" in a Rails app, "check this against the 37signals playbook", "is this vanilla Rails", or runs /rails-37signals:rails-review. Runs the 37signals Rails review checklist against the current diff, a branch, or named files and reports findings with the rule each one breaks.
+description: Runs the 37signals Rails review checklist against the current diff, a branch, or named files, and reports findings with the rule each one breaks. This skill owns the checklist; the rails-reviewer agent loads it rather than keeping its own copy. Prefer the rails-reviewer agent for review offered after a change; use this skill when the user asks for a review directly.
 argument-hint: "[base-ref | file paths]  (default: uncommitted changes, else HEAD vs main)"
 allowed-tools: Bash(git diff:*), Bash(git log:*), Bash(git status:*), Bash(git merge-base:*), Bash(git rev-parse:*), Read, Grep, Glob
 ---
