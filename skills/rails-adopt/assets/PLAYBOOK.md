@@ -21,7 +21,7 @@ explicit product constraint when it requires a documented divergence.
 
 ## Models and data
 
-- Make models own associations, scopes, transitions, callbacks, and persistence. (`fizzy/app/models/card.rb:6-26, 58-94`)
+- Make models own associations, scopes, transitions, callbacks, and persistence. (`fizzy/app/models/card.rb:6-26`, `fizzy/app/models/card.rb:58-94`)
 - Use small named concerns for cohesive slices of model behaviour. (`fizzy/app/models/card.rb:1-4`)
 - Put association defaults at the association when the current context is truly the domain default. (`fizzy/app/models/card.rb:6-8`)
 - Order by a timestamp and `id` to make ties deterministic. (`fizzy/app/models/card.rb:22-24`)
@@ -78,7 +78,7 @@ explicit product constraint when it requires a documented divergence.
 
 - Use Minitest and fixtures; reach for an existing fixture before creating a record. (`writebook/test/test_helper.rb:5-14`; `11-testing.md`)
 - Keep global setup for process state, not test data. (`fizzy/test/test_helper.rb:45-73`)
-- Run ordinary tests in parallel; run browser/system tests serially if shared state makes them unreliable. (`fizzy/config/ci.rb:5-7, 28-29`)
+- Run ordinary tests in parallel; run browser/system tests serially if shared state makes them unreliable. (`fizzy/config/ci.rb:5-7`, `fizzy/config/ci.rb:28-29`)
 - Assert response/body/domain behaviour rather than implementation details. (`writebook/AGENTS.md:21-34`)
 - Add one focused test for new non-trivial logic; do not scaffold a test framework around it.
 

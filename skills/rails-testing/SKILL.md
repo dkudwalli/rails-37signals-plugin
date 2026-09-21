@@ -83,7 +83,7 @@ Write system tests only for interactions that need a browser — Turbo Streams a
 updating — not CRUD an integration test covers. Campfire has three. Configure the driver explicitly
 and comment each non-obvious Chrome flag with the flake it prevents
 (`fizzy/test/application_system_test_case.rb:4-30`). **Run system tests serially**
-(`PARALLEL_WORKERS=1`) as a separate CI step (`fizzy/config/ci.rb:5-7, 28-29`).
+(`PARALLEL_WORKERS=1`) as a separate CI step (`fizzy/config/ci.rb:5-7`, `fizzy/config/ci.rb:28-29`).
 
 ## External HTTP and mocking
 
