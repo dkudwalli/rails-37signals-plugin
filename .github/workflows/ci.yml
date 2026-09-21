@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: Validate plugin
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Validate marketplace manifest
+        run: claude plugin validate . --strict
+
+      - name: Validate plugin manifest
+        run: claude plugin validate .claude-plugin/plugin.json --strict
+
+      - name: Validate skills
+        run: claude plugin validate ./skills --strict
+
+      - name: Validate agents
+        run: claude plugin validate ./agents --strict
+
+  structure:
+    name: Structural invariants
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check invariants
+        run: ./scripts/check-structure.sh
+
+  citations:
+    name: Citations
+    runs-on: ubuntu-latest
+    # The three source applications are not public checkouts we can clone here.
+    # check-citations.sh exits 2 when they are absent; this job records that
+    # rather than pretending the citations were verified.
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check citation format
+        run: ./scripts/check-citation-format.sh
+      - name: Note
+        run: |
+          echo "Path and line-range verification needs local checkouts of fizzy,"
+          echo "once-campfire and writebook. Run it before releasing:"
+          echo "  ./scripts/check-citations.sh /path/to/parent"
+          echo "See SOURCES.md for the pinned commits."

@@ -1,14 +1,19 @@
 # rails-37signals
 
 A Claude Code plugin that makes Claude write Rails the way 37signals does: vanilla Rails, rich
-models, no service layer, Minitest and fixtures, importmap, and plain CSS. Every rule comes from
-three real applications — **Fizzy** (newest), **Once Campfire** and **Writebook** — and carries a
-citation into their source.
+models, no service layer, Minitest and fixtures, importmap, and plain CSS. The rules come from three
+real applications — **Fizzy** (newest), **Once Campfire** and **Writebook** — and carry citations
+into their source.
 
 It is built from the *37signals Rails playbook* (observed 2026-09-18). The rules are copied into the
-plugin, so it works on any machine without the playbook or source repositories.
+plugin, so it works on any machine without the playbook or source repositories. The commits each
+application was read at are pinned in [`SOURCES.md`](SOURCES.md), and
+`scripts/check-citations.sh` verifies every citation against a local checkout.
 
 ## What's included
+
+Fourteen skills and one agent. Eleven skills are knowledge that loads when relevant; three are
+task skills you invoke yourself.
 
 ### Knowledge skills (load automatically when relevant)
 
@@ -26,21 +31,32 @@ plugin, so it works on any machine without the playbook or source repositories.
 | `rails-testing` | Minitest plus fixtures, integration tests, custom assertions, serial system tests |
 | `rails-tooling-deploy` | `bin/setup`, `config/ci.rb`, RuboCop omakase, Docker, Kamal, config lifecycle, operability |
 
-### Commands
+### Task skills (you invoke these)
 
-| Command | What it does |
+These are skills, not `commands/` files — Claude Code exposes every plugin skill as
+`/plugin-name:skill-name`, so they are invocable as slash commands without a separate command
+definition.
+
+| Skill | What it does |
 |---|---|
 | `/rails-37signals:rails-review [ref or paths]` | Reviews the diff against the playbook checklist and reports findings by severity |
 | `/rails-37signals:rails-profile [AGENTS.md path]` | Walks you through choosing between the ONCE-compatible and Fizzy stacks, then records the choice in `AGENTS.md` |
 | `/rails-37signals:rails-adopt [AGENTS.md or CLAUDE.md]` | Adds the condensed ruleset to the target repo's agent instructions |
 
-`rails-profile` and `rails-adopt` edit files, so they run only when you invoke them.
+`rails-adopt` only ever runs when you invoke it — it carries `disable-model-invocation`, because
+it rewrites your `AGENTS.md`. `rails-profile` can also answer a stack question in passing ("Solid
+Queue or Redis?") but asks before writing anything.
 
 ### Agent
 
-`rails-reviewer` runs the checklist on its own after a Rails change, or when you ask for a playbook
-review. It has no write or edit tools and is told to use Bash only for read-only git commands. It
-reports findings; it does not change code.
+`rails-reviewer` (`agents/rails-reviewer.md`) runs the checklist on its own after a Rails change, or
+when you ask for a playbook review. It has no write or edit tools and is told to use Bash only for
+read-only git commands. It reports findings; it does not change code.
+
+**The agent does not carry its own checklist.** It loads the `rails-review` skill through the
+`Skill` tool, so there is exactly one copy of the checklist to keep current. This is why
+`rails-review` must stay model-invocable: `disable-model-invocation` would put it out of the
+agent's reach. `scripts/check-structure.sh` enforces that.
 
 No hooks, MCP servers or settings. The plugin advises and never blocks an edit.
 
@@ -65,8 +81,8 @@ claude plugin marketplace add dkudwalli/rails-37signals-plugin
 claude plugin install rails-37signals@rails-37signals
 ```
 
-Restart Claude Code if the skills and commands don't appear. Run `/plugin` to check that
-`rails-37signals` is installed and enabled.
+Restart Claude Code if the skills don't appear. Run `/plugin` to check that `rails-37signals` is
+installed and enabled.
 
 ### From a local clone
 
@@ -132,7 +148,30 @@ says otherwise.
 
 The skills are copies of the playbook's chapters. When a chapter changes, update the matching skill
 and copy the new `PLAYBOOK.md` over `skills/rails-adopt/assets/PLAYBOOK.md`. Then bump `version` in
-`.claude-plugin/plugin.json`.
+**both** `.claude-plugin/plugin.json` and the entry in `.claude-plugin/marketplace.json` —
+`claude plugin tag --dry-run` checks that the two agree.
+
+Some skills keep their detail in `references/`, which the table below does not list: `rails-house-style`
+(`ruby-style.md`, `absences.md`), `rails-models` (`patterns.md`), `rails-testing` (`patterns.md`),
+`rails-auth-security` (`hardening.md`) and `rails-hotwire-javascript` (`native-and-pwa.md`). Check
+those too.
+
+Before releasing, run the checks:
+
+```bash
+claude plugin validate . --strict
+claude plugin validate .claude-plugin/plugin.json --strict
+claude plugin validate ./skills --strict
+claude plugin validate ./agents --strict
+./scripts/check-structure.sh          # invariants that are invisible in a diff
+./scripts/check-citation-format.sh    # citation style
+./scripts/check-citations.sh          # every citation resolves (needs the checkouts)
+claude plugin eval . --ablation with-without   # does the plugin change behaviour?
+```
+
+The first six run in CI (`.github/workflows/ci.yml`); `check-citations.sh` needs local checkouts of
+the three applications, so it is a local/release step. The evals cost money per run and are not on
+every push.
 
 | Playbook chapters | Skill |
 |---|---|
