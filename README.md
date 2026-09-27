@@ -62,6 +62,21 @@ No hooks, MCP servers or settings. The plugin advises and never blocks an edit.
 
 ## Installation
 
+### Codex
+
+Add this repository's marketplace, then install the plugin:
+
+```bash
+codex plugin marketplace add dkudwalli/rails-37signals-plugin
+codex plugin add rails-37signals@personal
+```
+
+For an unpushed local clone, replace `dkudwalli/rails-37signals-plugin` with its absolute path.
+Start a new Codex thread after installing. The Codex package contains compatibility-adjusted copies
+of the Claude skills; update both skill trees when changing the playbook.
+
+### Claude Code
+
 This repository is both the plugin and a one-plugin marketplace
 (`.claude-plugin/marketplace.json`). You add the marketplace, then install the plugin from it.
 
@@ -148,8 +163,9 @@ says otherwise.
 
 The skills are copies of the playbook's chapters. When a chapter changes, update the matching skill
 and copy the new `PLAYBOOK.md` over `skills/rails-adopt/assets/PLAYBOOK.md`. Then bump `version` in
-**both** `.claude-plugin/plugin.json` and the entry in `.claude-plugin/marketplace.json` —
-`claude plugin tag --dry-run` checks that the two agree.
+the two Claude manifests and the Codex manifest: `.claude-plugin/plugin.json`, the entry in
+`.claude-plugin/marketplace.json`, and `plugins/rails-37signals/.codex-plugin/plugin.json` —
+`claude plugin tag --dry-run` checks the Claude pair.
 
 Some skills keep their detail in `references/`, which the table below does not list: `rails-house-style`
 (`ruby-style.md`, `absences.md`), `rails-models` (`patterns.md`), `rails-testing` (`patterns.md`),

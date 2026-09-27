@@ -1,0 +1,29 @@
+{
+  "name": "rails-37signals",
+  "version": "0.1.0",
+  "description": "Write Rails the 37signals way: vanilla Rails, rich models, Minitest, importmap, and plain CSS.",
+  "author": {
+    "name": "Dhishan",
+    "email": "marketing@dayspringlabs.com",
+    "url": "https://github.com/dkudwalli"
+  },
+  "homepage": "https://github.com/dkudwalli/rails-37signals-plugin",
+  "repository": "https://github.com/dkudwalli/rails-37signals-plugin",
+  "license": "MIT",
+  "keywords": ["rails", "ruby", "37signals", "hotwire", "minitest"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Rails 37signals",
+    "shortDescription": "37signals conventions for vanilla Rails.",
+    "longDescription": "Rails guidance and review skills drawn from Fizzy, Once Campfire, and Writebook.",
+    "developerName": "Dhishan",
+    "category": "Productivity",
+    "capabilities": ["Interactive", "Write"],
+    "websiteURL": "https://github.com/dkudwalli/rails-37signals-plugin",
+    "defaultPrompt": [
+      "Review this Rails diff against 37signals conventions.",
+      "Help me choose a 37signals-compatible Rails stack.",
+      "Add this Rails feature the 37signals way."
+    ]
+  }
+}
